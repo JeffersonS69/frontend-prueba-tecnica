@@ -130,7 +130,7 @@ class UserState extends State<User> {
                 labelText: 'Hora',
               ),
               controller:
-                  TextEditingController(text: widget.solicitud['fecha_visita']),
+                  TextEditingController(text: widget.solicitud['hora_visita']),
               style: const TextStyle(color: Colors.black87),
               enabled: false,
             ),
