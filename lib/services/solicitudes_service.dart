@@ -1,13 +1,14 @@
 import 'dart:convert';
+import 'package:frontend/constant/message.dart';
+import 'package:frontend/constant/url.dart';
 import 'package:frontend/services/auth/auth_service.dart';
 import 'package:http/http.dart' as http;
 
 class SolicitudesService {
-
   Future<List<dynamic>> fetchSolicitudes() async {
     try {
       final token = await _validateToken();
-      final url = Uri.parse('http://10.0.2.2:3000/solicitudes');
+      final url = Uri.parse('$localhost/solicitudes');
       final response = await http.get(url, headers: {
         'Content-Type': 'application/json',
         'authorization': 'Bearer $token',
@@ -22,7 +23,7 @@ class SolicitudesService {
     try {
       final token = await _validateToken();
 
-      final url = Uri.parse('http://10.0.2.2:3000/solicitudes/$rol/$id');
+      final url = Uri.parse('$localhost/solicitudes/$rol/$id');
 
       final response = await http.get(url, headers: {
         'Content-Type': 'application/json',
@@ -38,7 +39,7 @@ class SolicitudesService {
   Future<void> createSolicitud(Map<String, dynamic> solicitud) async {
     try {
       final token = await _validateToken();
-      final url = Uri.parse('http://10.0.2.2:3000/solicitudes');
+      final url = Uri.parse('$localhost/solicitudes');
       await http.post(
         url,
         headers: {
@@ -56,7 +57,7 @@ class SolicitudesService {
       int solicitudId, Map<String, String?> updateData) async {
     try {
       final token = await _validateToken();
-      final url = Uri.parse('http://10.0.2.2:3000/solicitudes/$solicitudId');
+      final url = Uri.parse('$localhost/solicitudes/$solicitudId');
       final a = await http.patch(
         url,
         headers: {
@@ -74,8 +75,7 @@ class SolicitudesService {
   Future<void> updateCheckSolicitud(int solicitudId, String estado) async {
     try {
       final token = await _validateToken();
-      final url =
-          Uri.parse('http://10.0.2.2:3000/solicitudes/estado/$solicitudId');
+      final url = Uri.parse('$localhost/solicitudes/estado/$solicitudId');
       await http.patch(
         url,
         headers: {
@@ -94,7 +94,7 @@ class SolicitudesService {
   Future<void> deleteSolicitud(int solicitudId) async {
     try {
       final token = await _validateToken();
-      final url = Uri.parse('http://10.0.2.2:3000/solicitudes/$solicitudId');
+      final url = Uri.parse('$localhost/solicitudes/$solicitudId');
       await http.delete(
         url,
         headers: {
@@ -107,13 +107,12 @@ class SolicitudesService {
     }
   }
 
-   Future<String> _validateToken() async {
+  Future<String> _validateToken() async {
     try {
       final token = await AuthService.getToken();
 
       if (token == null || token.isEmpty) {
-        throw Exception(
-            'Token no encontrado o expirado. Por favor, inicie sesión nuevamente.');
+        throw Exception(messageTokenExpired);
       }
       return token;
     } catch (error) {
