@@ -3,11 +3,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:frontend/services/solicitudes_service.dart';
+import 'package:frontend/services/usuarios_service.dart';
 import 'package:image_picker/image_picker.dart';
 
 class SolicitudForm extends StatefulWidget {
   final VoidCallback validatedToken;
   final VoidCallback reloadSolicitud;
+  final SolicitudesService serviceSolicitud;
+  final UsuariosService serviceUsuario;
   final String byRol;
   final int id;
 
@@ -17,6 +20,8 @@ class SolicitudForm extends StatefulWidget {
     required this.byRol,
     required this.id,
     required this.validatedToken,
+    required this.serviceUsuario,
+    required this.serviceSolicitud,
   });
 
   @override
@@ -25,7 +30,6 @@ class SolicitudForm extends StatefulWidget {
 
 class SolicitudFormState extends State<SolicitudForm> {
   List<String> solicitudes = [];
-  final service = SolicitudesService();
   final _formKey = GlobalKey<FormState>();
   final _manzanaController = TextEditingController();
   final _villaController = TextEditingController();
@@ -48,7 +52,7 @@ class SolicitudFormState extends State<SolicitudForm> {
   Future<void> onlyByRol(String byRol) async {
     final rol = byRol == 'visitante' ? 'residente' : 'visitante';
     try {
-      final data = await service.fetchOnlyByRol(rol);
+      final data = await widget.serviceUsuario.fetchOnlyByRol(rol);
       setState(() {
         solicitudes = data.map<String>((item) => item['cedula']).toList();
       });
@@ -80,7 +84,8 @@ class SolicitudFormState extends State<SolicitudForm> {
   Future<void> _submitFrom() async {
     widget.validatedToken();
     try {
-      final usuario = await service.fetchOnlyByCedula(selectedSolicitud!);
+      final usuario =
+          await widget.serviceUsuario.fetchOnlyByCedula(selectedSolicitud!);
       final solicitudData = {
         'visitante_id':
             widget.byRol == 'visitante' ? widget.id : usuario['usuario_id'],
@@ -93,7 +98,7 @@ class SolicitudFormState extends State<SolicitudForm> {
         'medio_ingreso': selectedMedio,
         if (base64String.isNotEmpty) 'foto_placa': base64String,
       };
-      await service.createSolicitud(solicitudData);
+      await widget.serviceSolicitud.createSolicitud(solicitudData);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Se ha creado la solicitud correctamente'),

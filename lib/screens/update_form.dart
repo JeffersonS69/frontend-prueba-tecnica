@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:frontend/functions/submit_handler.dart';
 import 'package:frontend/services/solicitudes_service.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -45,33 +45,6 @@ class UpdateFormState extends State<UpdateForm> {
     _horaController.text = widget.hora;
     selectedMedio = widget.medio;
     base64String = widget.foto ?? '';
-  }
-
-  Future<void> _submitForm() async {
-    try {
-      final formData = {
-        if (_fechaController.text.isNotEmpty)
-          'fecha_visita': _fechaController.text,
-        if (_horaController.text.isNotEmpty)
-          'hora_visita': _horaController.text,
-        'medio_ingreso': selectedMedio,
-        if (base64String.isNotEmpty) 'foto_placa': base64String,
-      };
-      await service.updateSolicitud(widget.solicitudId, formData);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Se ha actualizado la solicitud correctamente'),
-        ),
-      );
-      widget.reloadSolicitud();
-      Navigator.pop(context);
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al actualizar la solicitud'),
-        ),
-      );
-    }
   }
 
   Future<void> _pickImage() async {
@@ -203,7 +176,15 @@ class UpdateFormState extends State<UpdateForm> {
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    await _submitForm();
+                    await FormSubmitHandler.updateSubmit(
+                        context: context,
+                        solicitudId: widget.solicitudId,
+                        fechaController: _fechaController,
+                        horaController: _horaController,
+                        selectedMedio: selectedMedio!,
+                        base64String: base64String,
+                        service: service,
+                        reloadSolicitud: widget.reloadSolicitud);
                   }
                 },
                 child: const Text('Actualizar solicitud'),

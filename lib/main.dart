@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/functions/solicitudes_state.dart';
 import 'package:frontend/screens/login_screen.dart';
-import 'package:frontend/services/auth_service.dart';
+import 'package:frontend/services/auth/auth_service.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+    create: (_) => SolicitudesState(),
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {

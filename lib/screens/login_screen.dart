@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:frontend/screens/home.dart';
+import 'package:frontend/functions/solicitudes_state.dart';
+import 'package:frontend/functions/submit_handler.dart';
 import 'package:frontend/screens/register_screen.dart';
-import 'package:frontend/services/auth_service.dart';
+import 'package:frontend/services/auth/auth_service.dart';
+import 'package:frontend/services/usuarios_service.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,42 +15,15 @@ class LoginScreen extends StatefulWidget {
 }
 
 class LoginScreenState extends State<LoginScreen> {
+  final serviceUsuario = UsuariosService();
   final _formKey = GlobalKey<FormState>();
   final _cedulaController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  Future<void> _submitForm(AuthService authService) async {
-    try {
-      final success = await authService.login(
-        _cedulaController.text,
-        _passwordController.text,
-      );
-
-      if (success) {
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (_) => Home(
-                      authService: authService,
-                    )));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Credenciales incorrectas')),
-        );
-      }
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al iniciar sesión'),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
-
+    final solicitudesState = Provider.of<SolicitudesState>(context);
     return Scaffold(
       body: Center(
         child: Padding(
@@ -112,7 +87,13 @@ class LoginScreenState extends State<LoginScreen> {
                   ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        await _submitForm(authService);
+                        await FormSubmitHandler.loginSubmit(
+                            solicitudesState: solicitudesState,
+                            context: context,
+                            cedulaController: _cedulaController,
+                            passwordController: _passwordController,
+                            authService: authService,
+                            serviceUsuario: serviceUsuario);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -130,7 +111,8 @@ class LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const RegisterScreen()),
+                            builder: (context) =>
+                                RegisterScreen(serviceUsuario: serviceUsuario)),
                       );
                     },
                     style: ElevatedButton.styleFrom(

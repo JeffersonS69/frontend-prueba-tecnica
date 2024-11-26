@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:frontend/services/solicitudes_service.dart';
+import 'package:frontend/functions/submit_handler.dart';
+import 'package:frontend/services/usuarios_service.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  final UsuariosService serviceUsuario;
+  const RegisterScreen({super.key, required this.serviceUsuario});
 
   @override
   RegisterScreenState createState() => RegisterScreenState();
 }
 
 class RegisterScreenState extends State<RegisterScreen> {
-  final service = SolicitudesService();
   final _formKey = GlobalKey<FormState>();
   final _nombresController = TextEditingController();
   final _apellidosController = TextEditingController();
@@ -19,36 +20,6 @@ class RegisterScreenState extends State<RegisterScreen> {
   final List<String> rol = ['visitante', 'residente'];
 
   String? selectedRol;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  Future<void> _submitForm() async {
-    try {
-      final formData = {
-        'nombres': _nombresController.text,
-        'apellidos': _apellidosController.text,
-        'cedula': _cedulaController.text,
-        'password': _passwordController.text,
-        'rol': selectedRol,
-      };
-      await service.createUser(formData);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Se ha registrado la solicitud correctamente'),
-        ),
-      );
-      Navigator.pop(context);
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al registrar la solicitud'),
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +120,15 @@ class RegisterScreenState extends State<RegisterScreen> {
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    await _submitForm();
+                    await FormSubmitHandler.registerSubmit(
+                        context: context,
+                        nombresController: _nombresController,
+                        apellidosController: _apellidosController,
+                        cedulaController: _cedulaController,
+                        passwordController: _passwordController,
+                        serviceUsuario: widget.serviceUsuario,
+                        selectedRol: selectedRol
+                        );
                   }
                 },
                 child: const Text('Crear'),

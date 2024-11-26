@@ -1,13 +1,15 @@
 import 'dart:convert'; // Para poder usar base64Decode
 import 'package:flutter/material.dart';
-import 'package:frontend/services/solicitudes_service.dart';
+import 'package:frontend/services/usuarios_service.dart';
 
 class User extends StatefulWidget {
+  final UsuariosService serviceUsuario;
   final Map<String, dynamic> solicitud;
 
   const User({
     super.key,
     required this.solicitud,
+    required this.serviceUsuario,
   });
 
   @override
@@ -15,10 +17,8 @@ class User extends StatefulWidget {
 }
 
 class UserState extends State<User> {
-  final service = SolicitudesService();
-
   Future<Map<String, dynamic>> _getUsuario(int id) async {
-    final visitante = await service.fetchOnlyById(id);
+    final visitante = await widget.serviceUsuario.fetchOnlyById(id);
     return visitante;
   }
 

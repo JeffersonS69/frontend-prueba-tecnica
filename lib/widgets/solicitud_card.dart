@@ -1,145 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/api/peticiones_usuario.dart';
+import 'package:frontend/functions/check_solicitud.dart';
+import 'package:frontend/functions/submit_handler.dart';
 import 'package:frontend/screens/update_form.dart';
 import 'package:frontend/screens/user.dart';
 import 'package:frontend/services/solicitudes_service.dart';
+import 'package:frontend/services/usuarios_service.dart';
 
 class SolicitudCard extends StatelessWidget {
   final VoidCallback validatedToken;
   final VoidCallback reloadSolicitud;
+  final UsuariosService serviceUsuario;
   final Map<String, dynamic> solicitud;
   final int id;
   final String byRol;
-  final service = SolicitudesService();
+  final SolicitudesService serviceSolicitud;
 
-  SolicitudCard({
+  const SolicitudCard({
     super.key,
     required this.solicitud,
     required this.id,
     required this.byRol,
     required this.reloadSolicitud,
     required this.validatedToken,
+    required this.serviceUsuario,
+    required this.serviceSolicitud,
   });
-
-  Future<String> _getNombreCompleto(int usuarioId) async {
-    final usuario = await service.fetchOnlyById(usuarioId);
-    return '${usuario['nombres']} ${usuario['apellidos']}';
-  }
-
-  Future<void> _deleteSolicitud(BuildContext context) async {
-    validatedToken();
-    try {
-      await service.deleteSolicitud(solicitud['solicitud_id']);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Solicitud eliminada con éxito'),
-        ),
-      );
-      reloadSolicitud();
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al eliminar la solicitud'),
-        ),
-      );
-    }
-  }
-
-  Future<void> _confirmDelete(BuildContext context) async {
-    validatedToken();
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Confirmar eliminación'),
-          content:
-              const Text('¿Está seguro de que desea eliminar esta solicitud?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Eliminar'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirm == true) {
-      await _deleteSolicitud(context);
-    }
-  }
-
-  Future<void> _checkSolicitud(BuildContext context) async {
-    validatedToken();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Acción requerida'),
-          content: const Text('¿Desea aprobar o rechazar esta solicitud?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop('approve'),
-              child: const Text(
-                'Aprobar',
-                style: TextStyle(color: Colors.green),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop('reject'),
-              child: const Text(
-                'Rechazar',
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop('cancel'),
-              child: const Text(
-                'Cancelar',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-
-    switch (result) {
-      case 'approve':
-        await _stateSolicitud('aprobada', context);
-        break;
-      case 'reject':
-        await _stateSolicitud('rechazada', context);
-        break;
-      case 'cancel':
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Acción cancelada')),
-        );
-        break;
-    }
-  }
-
-  Future<void> _stateSolicitud(String estado, BuildContext context) async {
-    validatedToken();
-    try {
-      await service.updateCheckSolicitud(solicitud['solicitud_id'], estado);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Solicitud actualizada con éxito'),
-        ),
-      );
-      reloadSolicitud();
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al actualizar la solicitud'),
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +54,10 @@ class SolicitudCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             FutureBuilder<String>(
-              future: _getNombreCompleto(solicitud['visitante_id']),
+              future: PeticionesUsuario.getNombreCompleto(
+                usuarioId: solicitud['visitante_id'],
+                serviceUsuario: serviceUsuario,
+              ),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Text('Cargando visitante...');
@@ -184,7 +73,10 @@ class SolicitudCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             FutureBuilder<String>(
-              future: _getNombreCompleto(solicitud['residente_id']),
+              future: PeticionesUsuario.getNombreCompleto(
+                usuarioId: solicitud['visitante_id'],
+                serviceUsuario: serviceUsuario,
+              ),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Text('Cargando residente...');
@@ -244,12 +136,24 @@ class SolicitudCard extends StatelessWidget {
                   ),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async => await _confirmDelete(context),
+                  onPressed: () async => await FormSubmitHandler.confirmDelete(
+                    context: context,
+                    validatedToken: validatedToken,
+                    serviceSolicitud: serviceSolicitud,
+                    solicitud: solicitud,
+                    reloadSolicitud: reloadSolicitud,
+                  ),
                 ),
                 if (byRol == 'residente' && solicitud['estado'] == 'ingresada')
                   IconButton(
                     icon: const Icon(Icons.check, color: Colors.green),
-                    onPressed: () async => await _checkSolicitud(context),
+                    onPressed: () async => await CheckSolicitud.changeState(
+                      context: context,
+                      validatedToken: validatedToken,
+                      serviceSolicitud: serviceSolicitud,
+                      solicitud: solicitud,
+                      reloadSolicitud: reloadSolicitud,
+                    ),
                   ),
                 IconButton(
                   icon: const Icon(Icons.person, color: Colors.blueAccent),
@@ -257,7 +161,10 @@ class SolicitudCard extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => User(solicitud: solicitud)),
+                          builder: (context) => User(
+                                solicitud: solicitud,
+                                serviceUsuario: serviceUsuario,
+                              )),
                     )
                   },
                 ),
