@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/api/peticiones_usuario.dart';
 import 'package:frontend/services/usuarios_service.dart';
+import 'package:frontend/widgets/view_textfield.dart';
 
 class User extends StatefulWidget {
   final UsuariosService serviceUsuario;
@@ -118,60 +119,24 @@ class UserState extends State<User> {
                 ),
               ),
             ),
-            TextField(
-              decoration: const InputDecoration(
+            ViewTextfield(
                 labelText: 'Fecha',
-              ),
-              controller:
-                  TextEditingController(text: widget.solicitud['fecha_visita']),
-              style: const TextStyle(color: Colors.black87),
-              enabled: false,
-            ),
-            TextField(
-              decoration: const InputDecoration(
+                controllerSolicitud: widget.solicitud['fecha_visita']),
+            ViewTextfield(
                 labelText: 'Hora',
-              ),
-              controller:
-                  TextEditingController(text: widget.solicitud['hora_visita']),
-              style: const TextStyle(color: Colors.black87),
-              enabled: false,
-            ),
-            TextField(
-              decoration: const InputDecoration(
+                controllerSolicitud: widget.solicitud['hora_visita']),
+            ViewTextfield(
                 labelText: 'Manzana',
-              ),
-              controller:
-                  TextEditingController(text: widget.solicitud['manzana']),
-              style: const TextStyle(color: Colors.black87),
-              enabled: false,
-            ),
-            TextField(
-              decoration: const InputDecoration(
+                controllerSolicitud: widget.solicitud['manzana']),
+            ViewTextfield(
                 labelText: 'Villa',
-              ),
-              controller:
-                  TextEditingController(text: widget.solicitud['villa']),
-              style: const TextStyle(color: Colors.black87),
-              enabled: false,
-            ),
-            TextField(
-              decoration: const InputDecoration(
+                controllerSolicitud: widget.solicitud['villa']),
+            ViewTextfield(
                 labelText: 'Estado',
-              ),
-              controller:
-                  TextEditingController(text: widget.solicitud['estado']),
-              style: const TextStyle(color: Colors.black87),
-              enabled: false,
-            ),
-            TextField(
-              decoration: const InputDecoration(
+                controllerSolicitud: widget.solicitud['estado']),
+            ViewTextfield(
                 labelText: 'Medio de ingreso',
-              ),
-              controller: TextEditingController(
-                  text: widget.solicitud['medio_ingreso']),
-              style: const TextStyle(color: Colors.black87),
-              enabled: false,
-            ),
+                controllerSolicitud: widget.solicitud['medio_ingreso']),
             const SizedBox(height: 20),
             Text(
               'Foto de la placa',

@@ -32,7 +32,6 @@ class SolicitudCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Método para obtener el color según el estado
     Color getEstadoColor(String estado) {
       switch (estado.toLowerCase()) {
         case 'rechazada':
