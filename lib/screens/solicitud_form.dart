@@ -198,7 +198,8 @@ class SolicitudFormState extends State<SolicitudForm> {
               if (widget.byRol == 'visitante' && selectedMedio == 'vehículo')
                 GestureDetector(
                   onTap: () async {
-                    await ImageSolicitud.pickImage(widget.imageState);
+                    await ImageSolicitud.pickImage(
+                        imageState: widget.imageState);
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 20),

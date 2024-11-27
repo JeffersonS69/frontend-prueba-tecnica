@@ -1,12 +1,12 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:frontend/functions/image_solicitud.dart';
+import 'package:frontend/functions/image_state.dart';
 import 'package:frontend/functions/submit_handler.dart';
 import 'package:frontend/services/solicitudes_service.dart';
-import 'package:image_picker/image_picker.dart';
 
 class UpdateForm extends StatefulWidget {
   final VoidCallback reloadSolicitud;
+  final ImageState imageState;
   final int solicitudId;
   final String fecha;
   final String hora;
@@ -21,6 +21,7 @@ class UpdateForm extends StatefulWidget {
     required this.hora,
     required this.medio,
     this.foto,
+    required this.imageState,
   });
 
   @override
@@ -35,32 +36,12 @@ class UpdateFormState extends State<UpdateForm> {
   final List<String> medios = ['vehículo', 'caminando'];
   String? selectedMedio;
 
-  String base64String = '';
-  String? imageError;
-
   @override
   void initState() {
     super.initState();
     _fechaController.text = widget.fecha;
     _horaController.text = widget.hora;
     selectedMedio = widget.medio;
-    base64String = widget.foto ?? '';
-  }
-
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      File imageFile = File(pickedFile.path);
-      List<int> imageBytes = await imageFile.readAsBytes();
-      String base64Image = base64Encode(imageBytes);
-
-      setState(() {
-        base64String = base64Image;
-        imageError = null;
-      });
-    }
   }
 
   @override
@@ -151,24 +132,27 @@ class UpdateFormState extends State<UpdateForm> {
               ),
               if (selectedMedio == 'vehículo')
                 GestureDetector(
-                  onTap: _pickImage,
+                  onTap: () async {
+                    await ImageSolicitud.pickImage(
+                        imageState: widget.imageState);
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     alignment: Alignment.center,
                     color: Colors.grey[300],
                     child: Text(
-                      base64String.isEmpty
+                      widget.imageState.Base64String.isEmpty
                           ? "Seleccionar Imagen"
                           : "Imagen Seleccionada",
                       style: const TextStyle(fontSize: 18),
                     ),
                   ),
                 ),
-              if (imageError != null)
+              if (widget.imageState.error != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    imageError!,
+                    widget.imageState.error!,
                     style: const TextStyle(color: Colors.red),
                   ),
                 ),
@@ -182,7 +166,7 @@ class UpdateFormState extends State<UpdateForm> {
                         fechaController: _fechaController,
                         horaController: _horaController,
                         selectedMedio: selectedMedio!,
-                        base64String: base64String,
+                        base64String: widget.imageState.Base64String,
                         service: service,
                         reloadSolicitud: widget.reloadSolicitud);
                   }

@@ -143,6 +143,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
                                 itemCount: solicitudesState.solicitudes.length,
                                 itemBuilder: (context, index) {
                                   return SolicitudCard(
+                                    imageState: imageState,
                                     serviceSolicitud: serviceSolicitud,
                                     serviceUsuario: widget.serviceUsuario,
                                     validatedToken: () => ProviderAuthService
@@ -171,6 +172,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
                                     solicitudesState.solicitudesAll.length,
                                 itemBuilder: (context, index) {
                                   return SolicitudCard(
+                                    imageState: imageState,
                                     serviceSolicitud: serviceSolicitud,
                                     serviceUsuario: widget.serviceUsuario,
                                     validatedToken: () => ProviderAuthService
@@ -198,6 +200,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
                           itemCount: solicitudesState.solicitudes.length,
                           itemBuilder: (context, index) {
                             return SolicitudCard(
+                              imageState: imageState,
                               serviceSolicitud: serviceSolicitud,
                               serviceUsuario: widget.serviceUsuario,
                               validatedToken: () =>

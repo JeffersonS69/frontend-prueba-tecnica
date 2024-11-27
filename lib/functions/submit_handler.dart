@@ -96,7 +96,7 @@ class FormSubmitHandler {
         if (base64String.isNotEmpty) 'foto_placa': base64String,
       };
       await service.fetchRequest(
-          request: 'update/delete', id: solicitudId, data: formData);
+          requestURL: 'update/delete', request: 'update', id: solicitudId, data: formData);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Se ha actualizado la solicitud correctamente'),
@@ -105,6 +105,7 @@ class FormSubmitHandler {
       reloadSolicitud();
       Navigator.pop(context);
     } catch (error) {
+      print(error);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error al actualizar la solicitud'),
@@ -121,7 +122,7 @@ class FormSubmitHandler {
   }) async {
     try {
       await serviceSolicitud.fetchRequest(
-          request: 'update/delete', id: solicitud['solicitud_id']);
+          requestURL: 'update/delete',request: 'delete', id: solicitud['solicitud_id']);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Solicitud eliminada con éxito'),
@@ -206,7 +207,7 @@ class FormSubmitHandler {
         if (base64String.isNotEmpty) 'foto_placa': base64String,
       };
       await serviceSolicitud.fetchRequest(
-          request: 'create', data: solicitudData);
+          requestURL: 'create', request: 'create', data: solicitudData);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Se ha creado la solicitud correctamente'),

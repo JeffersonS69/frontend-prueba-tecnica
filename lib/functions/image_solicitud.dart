@@ -4,9 +4,9 @@ import 'package:frontend/functions/image_state.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImageSolicitud {
-  static Future<void> pickImage(
-    ImageState imageState,
-  ) async {
+  static Future<void> pickImage({
+    required ImageState imageState,
+  }) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 

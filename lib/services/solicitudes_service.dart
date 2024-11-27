@@ -26,6 +26,7 @@ class SolicitudesService {
   }
 
   Future<void> fetchRequest({
+    required String requestURL,
     required String request,
     Map<String, dynamic>? data,
     String? estado,
@@ -33,9 +34,9 @@ class SolicitudesService {
   }) async {
     try {
       final token = await _validateToken();
-      final fetchURL = _getFetchUrlSolicitudes(request: request, id: id);
+      final fetchURL = _getFetchUrlSolicitudes(request: requestURL, id: id);
       final url = Uri.parse(fetchURL);
-      _makeRequest(
+      await _makeRequest(
         request: request,
         url: url,
         token: token,
@@ -43,6 +44,7 @@ class SolicitudesService {
         estado: estado,
       );
     } catch (error) {
+      print(error);
       throw Exception(error);
     }
   }
@@ -81,16 +83,16 @@ class SolicitudesService {
     }
   }
 
-  void _makeRequest({
+  dynamic _makeRequest({
     required String request,
     required Uri url,
     required String token,
     Map<String, dynamic>? data,
     String? estado,
-  }) {
+  }) async {
     switch (request) {
       case 'create':
-        http.post(
+        await http.post(
           url,
           headers: {
             'Content-Type': 'application/json',
@@ -100,7 +102,7 @@ class SolicitudesService {
         );
         break;
       case 'update':
-        http.patch(
+        await http.patch(
           url,
           headers: {
             'Content-Type': 'application/json',
@@ -110,7 +112,7 @@ class SolicitudesService {
         );
         break;
       case 'estado':
-        http.patch(
+        await http.patch(
           url,
           headers: {
             'Content-Type': 'application/json',
@@ -122,7 +124,7 @@ class SolicitudesService {
         );
         break;
       case 'delete':
-        http.delete(
+        await http.delete(
           url,
           headers: {
             'Content-Type': 'application/json',

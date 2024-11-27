@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/api/peticiones_usuario.dart';
 import 'package:frontend/functions/check_solicitud.dart';
+import 'package:frontend/functions/image_state.dart';
 import 'package:frontend/functions/submit_handler.dart';
 import 'package:frontend/screens/update_form.dart';
 import 'package:frontend/screens/user.dart';
@@ -12,6 +13,7 @@ class SolicitudCard extends StatelessWidget {
   final VoidCallback reloadSolicitud;
   final UsuariosService serviceUsuario;
   final Map<String, dynamic> solicitud;
+  final ImageState imageState;
   final int id;
   final String byRol;
   final SolicitudesService serviceSolicitud;
@@ -25,6 +27,7 @@ class SolicitudCard extends StatelessWidget {
     required this.validatedToken,
     required this.serviceUsuario,
     required this.serviceSolicitud,
+    required this.imageState,
   });
 
   @override
@@ -123,6 +126,7 @@ class SolicitudCard extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => UpdateForm(
+                            imageState: imageState,
                             reloadSolicitud: reloadSolicitud,
                             solicitudId: solicitud['solicitud_id'],
                             fecha: solicitud['fecha_visita'],

@@ -79,7 +79,10 @@ class CheckSolicitud {
   }) async {
     try {
       await serviceSolicitud.fetchRequest(
-          request: 'estado', id: solicitud['solicitud_id'], estado: estado);
+          requestURL: 'estado',
+          request: 'estado',
+          id: solicitud['solicitud_id'],
+          estado: estado);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Solicitud actualizada con éxito'),
