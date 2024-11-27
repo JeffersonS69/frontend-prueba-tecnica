@@ -16,6 +16,7 @@ class ImageSolicitud {
       String base64Image = base64Encode(imageBytes);
       imageState.base64String = base64Image;
       imageState.error = null;
+
     }
   }
 }

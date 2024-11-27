@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/api/peticiones_usuario.dart';
-import 'package:frontend/functions/image_solicitud.dart';
 import 'package:frontend/functions/image_state.dart';
 import 'package:frontend/functions/submit_handler.dart';
 import 'package:frontend/functions/usuarios_state.dart';
 import 'package:frontend/services/solicitudes_service.dart';
 import 'package:frontend/services/usuarios_service.dart';
+import 'package:frontend/widgets/insert_image.dart';
 
 class SolicitudForm extends StatefulWidget {
   final VoidCallback validatedToken;
@@ -47,6 +47,7 @@ class SolicitudFormState extends State<SolicitudForm> {
   @override
   void initState() {
     super.initState();
+    widget.imageState.base64String = '';
   }
 
   @override
@@ -196,23 +197,7 @@ class SolicitudFormState extends State<SolicitudForm> {
                 },
               ),
               if (widget.byRol == 'visitante' && selectedMedio == 'vehículo')
-                GestureDetector(
-                  onTap: () async {
-                    await ImageSolicitud.pickImage(
-                        imageState: widget.imageState);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    alignment: Alignment.center,
-                    color: Colors.grey[300],
-                    child: Text(
-                      widget.imageState.Base64String.isEmpty
-                          ? "Seleccionar Imagen"
-                          : "Imagen Seleccionada",
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ),
+                InsertImage(imageState: widget.imageState),
               if (widget.imageState.error != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
