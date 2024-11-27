@@ -1,16 +1,19 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:frontend/api/peticiones_usuario.dart';
+import 'package:frontend/functions/image_solicitud.dart';
+import 'package:frontend/functions/image_state.dart';
+import 'package:frontend/functions/submit_handler.dart';
+import 'package:frontend/functions/usuarios_state.dart';
 import 'package:frontend/services/solicitudes_service.dart';
 import 'package:frontend/services/usuarios_service.dart';
-import 'package:image_picker/image_picker.dart';
 
 class SolicitudForm extends StatefulWidget {
   final VoidCallback validatedToken;
   final VoidCallback reloadSolicitud;
   final SolicitudesService serviceSolicitud;
+  final ImageState imageState;
   final UsuariosService serviceUsuario;
+  final UsuariosState usuariosState;
   final String byRol;
   final int id;
 
@@ -22,6 +25,8 @@ class SolicitudForm extends StatefulWidget {
     required this.validatedToken,
     required this.serviceUsuario,
     required this.serviceSolicitud,
+    required this.imageState,
+    required this.usuariosState,
   });
 
   @override
@@ -29,15 +34,11 @@ class SolicitudForm extends StatefulWidget {
 }
 
 class SolicitudFormState extends State<SolicitudForm> {
-  List<String> solicitudes = [];
   final _formKey = GlobalKey<FormState>();
   final _manzanaController = TextEditingController();
   final _villaController = TextEditingController();
   final _fechaController = TextEditingController();
   final _horaController = TextEditingController();
-
-  String base64String = '';
-  String? imageError;
 
   final List<String> medios = ['vehículo', 'caminando'];
   String? selectedMedio;
@@ -46,74 +47,6 @@ class SolicitudFormState extends State<SolicitudForm> {
   @override
   void initState() {
     super.initState();
-    onlyByRol(widget.byRol);
-  }
-
-  Future<void> onlyByRol(String byRol) async {
-    final rol = byRol == 'visitante' ? 'residente' : 'visitante';
-    try {
-      final data = await widget.serviceUsuario.fetchOnlyByRol(rol);
-      setState(() {
-        solicitudes = data.map<String>((item) => item['cedula']).toList();
-      });
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al cargar la lista'),
-        ),
-      );
-    }
-  }
-
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      File imageFile = File(pickedFile.path);
-      List<int> imageBytes = await imageFile.readAsBytes();
-      String base64Image = base64Encode(imageBytes);
-
-      setState(() {
-        base64String = base64Image;
-        imageError = null;
-      });
-    }
-  }
-
-  Future<void> _submitFrom() async {
-    widget.validatedToken();
-    try {
-      final usuario =
-          await widget.serviceUsuario.fetchOnlyByCedula(selectedSolicitud!);
-      final solicitudData = {
-        'visitante_id':
-            widget.byRol == 'visitante' ? widget.id : usuario['usuario_id'],
-        'residente_id':
-            widget.byRol == 'residente' ? widget.id : usuario['usuario_id'],
-        'manzana': _manzanaController.text,
-        'villa': _villaController.text,
-        'fecha_visita': _fechaController.text,
-        'hora_visita': _horaController.text,
-        'medio_ingreso': selectedMedio,
-        if (base64String.isNotEmpty) 'foto_placa': base64String,
-      };
-      await widget.serviceSolicitud.createSolicitud(solicitudData);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Se ha creado la solicitud correctamente'),
-        ),
-      );
-      widget.reloadSolicitud();
-      Navigator.pop(context);
-    } catch (error) {
-      print(error);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al crear la solicitud'),
-        ),
-      );
-    }
   }
 
   @override
@@ -128,26 +61,42 @@ class SolicitudFormState extends State<SolicitudForm> {
           key: _formKey,
           child: ListView(
             children: [
-              DropdownButtonFormField<String>(
-                hint: const Text('Residente'),
-                value: selectedSolicitud,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedSolicitud = newValue;
-                  });
-                },
-                items:
-                    solicitudes.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Este campo es obligatorio';
+              FutureBuilder(
+                future: PeticionesUsuario.getCedulasUsuarios(
+                  byRol: widget.byRol,
+                  serviceUsuario: widget.serviceUsuario,
+                  context: context,
+                  usuariosState: widget.usuariosState,
+                ),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Text('Cargando...');
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    return DropdownButtonFormField<String>(
+                      hint: const Text('Residente'),
+                      value: selectedSolicitud,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedSolicitud = newValue;
+                        });
+                      },
+                      items: widget.usuariosState.Cedulas
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Este campo es obligatorio';
+                        }
+                        return null;
+                      },
+                    );
                   }
-                  return null;
                 },
               ),
               TextFormField(
@@ -248,32 +197,49 @@ class SolicitudFormState extends State<SolicitudForm> {
               ),
               if (widget.byRol == 'visitante' && selectedMedio == 'vehículo')
                 GestureDetector(
-                  onTap: _pickImage,
+                  onTap: () async {
+                    await ImageSolicitud.pickImage(widget.imageState);
+                  },
                   child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 20),
+                    padding: const EdgeInsets.symmetric(vertical: 20),
                     alignment: Alignment.center,
                     color: Colors.grey[300],
                     child: Text(
-                      base64String.isEmpty
+                      widget.imageState.Base64String.isEmpty
                           ? "Seleccionar Imagen"
                           : "Imagen Seleccionada",
-                      style: TextStyle(fontSize: 18),
+                      style: const TextStyle(fontSize: 18),
                     ),
                   ),
                 ),
-              if (imageError != null)
+              if (widget.imageState.error != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    imageError!,
-                    style: TextStyle(color: Colors.red),
+                    widget.imageState.error!,
+                    style: const TextStyle(color: Colors.red),
                   ),
                 ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    await _submitFrom();
+                    await FormSubmitHandler.solicitudSubmit(
+                      context: context,
+                      manzanaController: _manzanaController,
+                      villaController: _villaController,
+                      fechaController: _fechaController,
+                      horaController: _horaController,
+                      selectedMedio: selectedMedio!,
+                      base64String: widget.imageState.Base64String,
+                      serviceUsuario: widget.serviceUsuario,
+                      serviceSolicitud: widget.serviceSolicitud,
+                      selectedSolicitud: selectedSolicitud!,
+                      id: widget.id,
+                      byRol: widget.byRol,
+                      reloadSolicitud: widget.reloadSolicitud,
+                      selectedRol: selectedSolicitud!,
+                    );
                   }
                 },
                 child: const Text('Crear'),

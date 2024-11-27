@@ -30,7 +30,7 @@ class SolicitudCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Método para obtener el color según el estado
-    Color _getEstadoColor(String estado) {
+    Color getEstadoColor(String estado) {
       switch (estado.toLowerCase()) {
         case 'rechazada':
           return Colors.red;
@@ -55,8 +55,8 @@ class SolicitudCard extends StatelessWidget {
           children: [
             FutureBuilder<String>(
               future: PeticionesUsuario.getNombreCompleto(
-                usuarioId: solicitud['visitante_id'],
-                serviceUsuario: serviceUsuario,
+                solicitud['visitante_id'],
+                serviceUsuario,
               ),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -74,8 +74,8 @@ class SolicitudCard extends StatelessWidget {
             const SizedBox(height: 8),
             FutureBuilder<String>(
               future: PeticionesUsuario.getNombreCompleto(
-                usuarioId: solicitud['visitante_id'],
-                serviceUsuario: serviceUsuario,
+                solicitud['visitante_id'],
+                serviceUsuario,
               ),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -105,7 +105,7 @@ class SolicitudCard extends StatelessWidget {
                 Text(
                   solicitud['estado'],
                   style: TextStyle(
-                    color: _getEstadoColor(solicitud['estado']),
+                    color: getEstadoColor(solicitud['estado']),
                     fontWeight: FontWeight.bold,
                   ),
                 ),

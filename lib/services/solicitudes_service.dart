@@ -1,14 +1,20 @@
 import 'dart:convert';
 import 'package:frontend/constant/message.dart';
-import 'package:frontend/constant/url.dart';
+import 'package:frontend/constant/urls.dart';
 import 'package:frontend/services/auth/auth_service.dart';
 import 'package:http/http.dart' as http;
 
 class SolicitudesService {
-  Future<List<dynamic>> fetchSolicitudes() async {
+  Future<List<dynamic>> fetchSolicitudes({
+    required String request,
+    String? rol,
+    int? id,
+  }) async {
     try {
       final token = await _validateToken();
-      final url = Uri.parse('$localhost/solicitudes');
+      final fetchURL =
+          _getFetchUrlSolicitudes(request: request, rol: rol, id: id);
+      final url = Uri.parse(fetchURL);
       final response = await http.get(url, headers: {
         'Content-Type': 'application/json',
         'authorization': 'Bearer $token',
@@ -19,88 +25,22 @@ class SolicitudesService {
     }
   }
 
-  Future<List<dynamic>> fetchSolicitudesByRol(String rol, int id) async {
+  Future<void> fetchRequest({
+    required String request,
+    Map<String, dynamic>? data,
+    String? estado,
+    int? id,
+  }) async {
     try {
       final token = await _validateToken();
-
-      final url = Uri.parse('$localhost/solicitudes/$rol/$id');
-
-      final response = await http.get(url, headers: {
-        'Content-Type': 'application/json',
-        'authorization': 'Bearer $token',
-      });
-
-      return jsonDecode(response.body);
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<void> createSolicitud(Map<String, dynamic> solicitud) async {
-    try {
-      final token = await _validateToken();
-      final url = Uri.parse('$localhost/solicitudes');
-      await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'authorization': 'Bearer $token',
-        },
-        body: jsonEncode(solicitud),
-      );
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<void> updateSolicitud(
-      int solicitudId, Map<String, String?> updateData) async {
-    try {
-      final token = await _validateToken();
-      final url = Uri.parse('$localhost/solicitudes/$solicitudId');
-      final a = await http.patch(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'authorization': 'Bearer $token',
-        },
-        body: jsonEncode(updateData),
-      );
-      print(a.body);
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<void> updateCheckSolicitud(int solicitudId, String estado) async {
-    try {
-      final token = await _validateToken();
-      final url = Uri.parse('$localhost/solicitudes/estado/$solicitudId');
-      await http.patch(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'estado': estado,
-        }),
-      );
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<void> deleteSolicitud(int solicitudId) async {
-    try {
-      final token = await _validateToken();
-      final url = Uri.parse('$localhost/solicitudes/$solicitudId');
-      await http.delete(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'authorization': 'Bearer $token',
-        },
+      final fetchURL = _getFetchUrlSolicitudes(request: request, id: id);
+      final url = Uri.parse(fetchURL);
+      _makeRequest(
+        request: request,
+        url: url,
+        token: token,
+        data: data,
+        estado: estado,
       );
     } catch (error) {
       throw Exception(error);
@@ -117,6 +57,81 @@ class SolicitudesService {
       return token;
     } catch (error) {
       throw Exception(error);
+    }
+  }
+
+  String _getFetchUrlSolicitudes({
+    required String request,
+    String? rol,
+    int? id,
+  }) {
+    switch (request) {
+      case 'solicitudes':
+        return '$urlBase/$urlSolicitudes';
+      case 'solicitudByRol':
+        return '$urlBase/$urlSolicitudes/$rol/$id';
+      case 'create':
+        return '$urlBase/$urlSolicitudes';
+      case 'update/delete':
+        return '$urlBase/$urlSolicitudes/$id';
+      case 'estado':
+        return '$urlBase/$urlSolictudesEstado/$id';
+      default:
+        throw Exception('Petición no válida');
+    }
+  }
+
+  void _makeRequest({
+    required String request,
+    required Uri url,
+    required String token,
+    Map<String, dynamic>? data,
+    String? estado,
+  }) {
+    switch (request) {
+      case 'create':
+        http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer $token',
+          },
+          body: jsonEncode(data),
+        );
+        break;
+      case 'update':
+        http.patch(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer $token',
+          },
+          body: jsonEncode(data),
+        );
+        break;
+      case 'estado':
+        http.patch(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'estado': estado,
+          }),
+        );
+        break;
+      case 'delete':
+        http.delete(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer $token',
+          },
+        );
+        break;
+      default:
+        throw Exception('Petición no válida');
     }
   }
 }

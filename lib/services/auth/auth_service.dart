@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'package:frontend/constant/urls.dart';
 import 'package:frontend/services/auth/secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 class AuthService with ChangeNotifier {
+
   String? _token;
   String? _rol;
   int? _id;
@@ -13,7 +15,7 @@ class AuthService with ChangeNotifier {
   int? get id => _id;
 
   Future<bool> login(String cedula, String password) async {
-    final url = Uri.parse('http://10.0.2.2:3000/auth/login');
+    final url = Uri.parse('$urlBase/$urlLogin');
 
     final response = await http.post(
       url,
@@ -66,8 +68,8 @@ class AuthService with ChangeNotifier {
     return await SecureStorage.getToken();
   }
 
-  static Future<Map<String, dynamic>> getPerfile(String token) async {
-    final url = Uri.parse('http://10.0.2.2:3000/auth/perfile');
+  Future<Map<String, dynamic>> getPerfile(String token) async {
+    final url = Uri.parse('$urlBase/$urlPerfile');
     final response = await http.get(url, headers: {
       'Content-Type': 'application/json',
       'authorization': 'Bearer $token',

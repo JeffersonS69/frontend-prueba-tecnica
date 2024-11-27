@@ -1,5 +1,6 @@
-import 'dart:convert'; // Para poder usar base64Decode
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend/api/peticiones_usuario.dart';
 import 'package:frontend/services/usuarios_service.dart';
 
 class User extends StatefulWidget {
@@ -17,11 +18,6 @@ class User extends StatefulWidget {
 }
 
 class UserState extends State<User> {
-  Future<Map<String, dynamic>> _getUsuario(int id) async {
-    final visitante = await widget.serviceUsuario.fetchOnlyById(id);
-    return visitante;
-  }
-
   @override
   Widget build(BuildContext context) {
     String fotoPlaca = widget.solicitud['foto_placa'] ?? '';
@@ -46,7 +42,10 @@ class UserState extends State<User> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FutureBuilder<Map<String, dynamic>>(
-                      future: _getUsuario(widget.solicitud['visitante_id']),
+                      future: PeticionesUsuario.getUsuario(
+                        id: widget.solicitud['visitante_id'],
+                        serviceUsuario: widget.serviceUsuario,
+                      ),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -87,7 +86,10 @@ class UserState extends State<User> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FutureBuilder<Map<String, dynamic>>(
-                      future: _getUsuario(widget.solicitud['residente_id']),
+                      future: PeticionesUsuario.getUsuario(
+                        id: widget.solicitud['residente_id'],
+                        serviceUsuario: widget.serviceUsuario,
+                      ),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {

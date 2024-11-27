@@ -78,8 +78,8 @@ class CheckSolicitud {
     required VoidCallback reloadSolicitud,
   }) async {
     try {
-      await serviceSolicitud.updateCheckSolicitud(
-          solicitud['solicitud_id'], estado);
+      await serviceSolicitud.fetchRequest(
+          request: 'estado', id: solicitud['solicitud_id'], estado: estado);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Solicitud actualizada con éxito'),

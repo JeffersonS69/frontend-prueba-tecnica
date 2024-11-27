@@ -153,14 +153,14 @@ class UpdateFormState extends State<UpdateForm> {
                 GestureDetector(
                   onTap: _pickImage,
                   child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 20),
+                    padding: const EdgeInsets.symmetric(vertical: 20),
                     alignment: Alignment.center,
                     color: Colors.grey[300],
                     child: Text(
                       base64String.isEmpty
                           ? "Seleccionar Imagen"
                           : "Imagen Seleccionada",
-                      style: TextStyle(fontSize: 18),
+                      style: const TextStyle(fontSize: 18),
                     ),
                   ),
                 ),
@@ -169,7 +169,7 @@ class UpdateFormState extends State<UpdateForm> {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     imageError!,
-                    style: TextStyle(color: Colors.red),
+                    style: const TextStyle(color: Colors.red),
                   ),
                 ),
               const SizedBox(height: 16.0),

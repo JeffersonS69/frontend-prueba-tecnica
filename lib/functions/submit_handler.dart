@@ -95,7 +95,8 @@ class FormSubmitHandler {
         'medio_ingreso': selectedMedio,
         if (base64String.isNotEmpty) 'foto_placa': base64String,
       };
-      await service.updateSolicitud(solicitudId, formData);
+      await service.fetchRequest(
+          request: 'update/delete', id: solicitudId, data: formData);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Se ha actualizado la solicitud correctamente'),
@@ -119,7 +120,8 @@ class FormSubmitHandler {
     required VoidCallback reloadSolicitud,
   }) async {
     try {
-      await serviceSolicitud.deleteSolicitud(solicitud['solicitud_id']);
+      await serviceSolicitud.fetchRequest(
+          request: 'update/delete', id: solicitud['solicitud_id']);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Solicitud eliminada con éxito'),
@@ -170,6 +172,53 @@ class FormSubmitHandler {
         serviceSolicitud: serviceSolicitud,
         solicitud: solicitud,
         reloadSolicitud: reloadSolicitud,
+      );
+    }
+  }
+
+  static Future<void> solicitudSubmit({
+    required BuildContext context,
+    required TextEditingController manzanaController,
+    required TextEditingController villaController,
+    required TextEditingController fechaController,
+    required TextEditingController horaController,
+    required String selectedMedio,
+    required String base64String,
+    required UsuariosService serviceUsuario,
+    required SolicitudesService serviceSolicitud,
+    required String selectedSolicitud,
+    required int id,
+    required String byRol,
+    required VoidCallback reloadSolicitud,
+    required String selectedRol,
+  }) async {
+    try {
+      final usuario =
+          await serviceUsuario.fetchUsuario(selectedSolicitud, 'cedula');
+      final solicitudData = {
+        'visitante_id': byRol == 'visitante' ? id : usuario['usuario_id'],
+        'residente_id': byRol == 'residente' ? id : usuario['usuario_id'],
+        'manzana': manzanaController.text,
+        'villa': villaController.text,
+        'fecha_visita': fechaController.text,
+        'hora_visita': horaController.text,
+        'medio_ingreso': selectedMedio,
+        if (base64String.isNotEmpty) 'foto_placa': base64String,
+      };
+      await serviceSolicitud.fetchRequest(
+          request: 'create', data: solicitudData);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Se ha creado la solicitud correctamente'),
+        ),
+      );
+      reloadSolicitud();
+      Navigator.pop(context);
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al crear la solicitud'),
+        ),
       );
     }
   }

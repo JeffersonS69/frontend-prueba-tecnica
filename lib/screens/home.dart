@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/api/peticiones_solicitud.dart';
+import 'package:frontend/functions/image_state.dart';
 import 'package:frontend/functions/provider_auth_service.dart';
 import 'package:frontend/functions/solicitudes_state.dart';
+import 'package:frontend/functions/usuarios_state.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/solicitud_form.dart';
 import 'package:frontend/services/auth/auth_service.dart';
@@ -43,7 +45,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
       serviceSolicitud: serviceSolicitud,
       solicitudesState: widget.solicitudesState,
     );
-    
+
     _tabController = TabController(vsync: this, length: 2);
 
     _tabController.addListener(
@@ -77,6 +79,9 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final imageState = Provider.of<ImageState>(context);
+    final usuariosState = Provider.of<UsuariosState>(context);
+
     return Consumer<SolicitudesState>(
       builder: (context, solicitudesState, child) {
         return Scaffold(
@@ -221,6 +226,8 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
                 context,
                 MaterialPageRoute(
                     builder: (context) => SolicitudForm(
+                          usuariosState: usuariosState,
+                          imageState: imageState,
                           serviceSolicitud: serviceSolicitud,
                           serviceUsuario: widget.serviceUsuario,
                           validatedToken: () =>

@@ -14,7 +14,8 @@ class PeticionesSolicitud {
     try {
       ProviderAuthService.checkTokenExpiration(context: context);
       solicitudesState.isLoading = true;
-      final data = await serviceSolicitud.fetchSolicitudesByRol(rol, id);
+      final data = await serviceSolicitud.fetchSolicitudes(
+          request: 'solicitudByRol', rol: rol, id: id);
       solicitudesState.solicitudes = data;
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -35,7 +36,8 @@ class PeticionesSolicitud {
     try {
       ProviderAuthService.checkTokenExpiration(context: context);
       solicitudesState.isLoading = true;
-      final data = await serviceSolicitud.fetchSolicitudes();
+      final data =
+          await serviceSolicitud.fetchSolicitudes(request: 'solicitudes');
       solicitudesState.solicitudesAll = data;
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
