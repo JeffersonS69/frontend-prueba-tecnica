@@ -20,7 +20,6 @@ class SolicitudesService {
         'authorization': 'Bearer $token',
       });
       final decodedResponse = jsonDecode(response.body);
-      print(decodedResponse);
       if (decodedResponse is List) {
         return decodedResponse;
       } else {

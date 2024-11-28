@@ -13,17 +13,12 @@ class PeticionesSolicitud {
     required String request,
   }) async {
     try {
-      print(rol);
-      print(id);
-      print(request);
-      print(solicitudesState.solicitudes);
       ProviderAuthService.checkTokenExpiration(context: context);
       solicitudesState.isLoading = true;
       final data = await serviceSolicitud.fetchSolicitudes(
           request: request, rol: rol, id: id);
       solicitudesState.solicitudes = data;
     } catch (error) {
-      print(error);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error al cargar las solicitudes'),
