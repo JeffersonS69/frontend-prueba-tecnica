@@ -14,14 +14,12 @@ class SolicitudCard extends StatelessWidget {
   final UsuariosService serviceUsuario;
   final Map<String, dynamic> solicitud;
   final ImageState imageState;
-  final int id;
   final String byRol;
   final SolicitudesService serviceSolicitud;
 
   const SolicitudCard({
     super.key,
     required this.solicitud,
-    required this.id,
     required this.byRol,
     required this.reloadSolicitud,
     required this.validatedToken,
@@ -76,7 +74,7 @@ class SolicitudCard extends StatelessWidget {
             const SizedBox(height: 8),
             FutureBuilder<String>(
               future: PeticionesUsuario.getNombreCompleto(
-                solicitud['visitante_id'],
+                solicitud['residente_id'],
                 serviceUsuario,
               ),
               builder: (context, snapshot) {

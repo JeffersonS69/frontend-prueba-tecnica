@@ -5,41 +5,25 @@ import 'package:frontend/functions/solicitudes_state.dart';
 
 class PeticionesSolicitud {
   static Future<void> fetchSolicitudes({
-    required String rol,
-    required int id,
+    String? rol,
+    int? id,
     required BuildContext context,
     required SolicitudesState solicitudesState,
     required SolicitudesService serviceSolicitud,
+    required String request,
   }) async {
     try {
+      print(rol);
+      print(id);
+      print(request);
+      print(solicitudesState.solicitudes);
       ProviderAuthService.checkTokenExpiration(context: context);
       solicitudesState.isLoading = true;
       final data = await serviceSolicitud.fetchSolicitudes(
-          request: 'solicitudByRol', rol: rol, id: id);
+          request: request, rol: rol, id: id);
       solicitudesState.solicitudes = data;
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al cargar las solicitudes'),
-        ),
-      );
-    } finally {
-      solicitudesState.isLoading = false;
-    }
-  }
-
-  static Future<void> fetchSolicitudesAll({
-    required BuildContext context,
-    required SolicitudesState solicitudesState,
-    required SolicitudesService serviceSolicitud,
-  }) async {
-    try {
-      ProviderAuthService.checkTokenExpiration(context: context);
-      solicitudesState.isLoading = true;
-      final data =
-          await serviceSolicitud.fetchSolicitudes(request: 'solicitudes');
-      solicitudesState.solicitudesAll = data;
-    } catch (error) {
+      print(error);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error al cargar las solicitudes'),

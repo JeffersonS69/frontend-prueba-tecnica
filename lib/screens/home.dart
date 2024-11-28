@@ -9,7 +9,7 @@ import 'package:frontend/screens/solicitud_form.dart';
 import 'package:frontend/services/auth/auth_service.dart';
 import 'package:frontend/services/solicitudes_service.dart';
 import 'package:frontend/services/usuarios_service.dart';
-import 'package:frontend/widgets/solicitud_card.dart';
+import 'package:frontend/widgets/list_view_solicitudes.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
@@ -38,36 +38,20 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     ProviderAuthService.checkTokenExpiration(context: widget.context);
-    PeticionesSolicitud.fetchSolicitudes(
-      rol: widget.authService.rol!,
-      id: widget.authService.id!,
-      context: widget.context,
-      serviceSolicitud: serviceSolicitud,
-      solicitudesState: widget.solicitudesState,
-    );
-
     _tabController = TabController(vsync: this, length: 2);
 
-    _tabController.addListener(
-      () {
-        if (_tabController.indexIsChanging) {
-          if (_tabController.index == 0) {
-            PeticionesSolicitud.fetchSolicitudes(
-              rol: widget.authService.rol!,
-              id: widget.authService.id!,
-              context: widget.context,
-              serviceSolicitud: serviceSolicitud,
-              solicitudesState: widget.solicitudesState,
-            );
-          } else if (_tabController.index == 1) {
-            PeticionesSolicitud.fetchSolicitudesAll(
-              context: widget.context,
-              serviceSolicitud: serviceSolicitud,
-              solicitudesState: widget.solicitudesState,
-            );
-          }
-        }
-      },
+    _fetchDataForTab(0);
+  }
+
+  void _fetchDataForTab(int index) {
+    final request = index == 0 ? 'solicitudByRol' : 'solicitudes';
+    PeticionesSolicitud.fetchSolicitudes(
+      context: context,
+      solicitudesState: widget.solicitudesState,
+      serviceSolicitud: serviceSolicitud,
+      id: widget.authService.id,
+      rol: widget.authService.rol,
+      request: request,
     );
   }
 
@@ -90,23 +74,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
             actions: [
               IconButton(
                 icon: const Icon(Icons.refresh),
-                onPressed: () {
-                  if (_tabController.index == 0) {
-                    PeticionesSolicitud.fetchSolicitudes(
-                      rol: widget.authService.rol!,
-                      id: widget.authService.id!,
-                      context: context,
-                      solicitudesState: solicitudesState,
-                      serviceSolicitud: serviceSolicitud,
-                    );
-                  } else if (_tabController.index == 1) {
-                    PeticionesSolicitud.fetchSolicitudesAll(
-                      context: context,
-                      serviceSolicitud: serviceSolicitud,
-                      solicitudesState: solicitudesState,
-                    );
-                  }
-                },
+                onPressed: () => _fetchDataForTab(_tabController.index),
               ),
               IconButton(
                 icon: const Icon(Icons.logout),
@@ -127,102 +95,33 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
                         text: 'Todas las Solicitudes',
                       ),
                     ],
+                    onTap: _fetchDataForTab,
                   )
                 : null,
           ),
-          body: solicitudesState.isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : widget.authService.rol == 'residente'
-                  ? TabBarView(
-                      controller: _tabController,
-                      children: [
-                        solicitudesState.solicitudes.isNotEmpty
-                            ? ListView.builder(
-                                itemCount: solicitudesState.solicitudes.length,
-                                itemBuilder: (context, index) {
-                                  return SolicitudCard(
-                                    imageState: imageState,
-                                    serviceSolicitud: serviceSolicitud,
-                                    serviceUsuario: widget.serviceUsuario,
-                                    validatedToken: () => ProviderAuthService
-                                        .checkTokenExpiration(context: context),
-                                    solicitud:
-                                        solicitudesState.solicitudes[index],
-                                    id: widget.authService.id!,
-                                    byRol: widget.authService.rol!,
-                                    reloadSolicitud: () =>
-                                        PeticionesSolicitud.fetchSolicitudes(
-                                      context: context,
-                                      rol: widget.authService.rol!,
-                                      id: widget.authService.id!,
-                                      serviceSolicitud: serviceSolicitud,
-                                      solicitudesState: solicitudesState,
-                                    ),
-                                  );
-                                },
-                              )
-                            : const Center(
-                                child: Text('No hay solicitudes'),
-                              ),
-                        solicitudesState.solicitudesAll.isNotEmpty
-                            ? ListView.builder(
-                                itemCount:
-                                    solicitudesState.solicitudesAll.length,
-                                itemBuilder: (context, index) {
-                                  return SolicitudCard(
-                                    imageState: imageState,
-                                    serviceSolicitud: serviceSolicitud,
-                                    serviceUsuario: widget.serviceUsuario,
-                                    validatedToken: () => ProviderAuthService
-                                        .checkTokenExpiration(context: context),
-                                    solicitud:
-                                        solicitudesState.solicitudesAll[index],
-                                    id: widget.authService.id!,
-                                    byRol: widget.authService.rol!,
-                                    reloadSolicitud: () =>
-                                        PeticionesSolicitud.fetchSolicitudesAll(
-                                      context: context,
-                                      serviceSolicitud: serviceSolicitud,
-                                      solicitudesState: solicitudesState,
-                                    ),
-                                  );
-                                },
-                              )
-                            : const Center(
-                                child: Text('No hay solicitudes'),
-                              ),
-                      ],
-                    )
-                  : solicitudesState.solicitudes.isNotEmpty
-                      ? ListView.builder(
-                          itemCount: solicitudesState.solicitudes.length,
-                          itemBuilder: (context, index) {
-                            return SolicitudCard(
-                              imageState: imageState,
-                              serviceSolicitud: serviceSolicitud,
-                              serviceUsuario: widget.serviceUsuario,
-                              validatedToken: () =>
-                                  ProviderAuthService.checkTokenExpiration(
-                                      context: context),
-                              solicitud: solicitudesState.solicitudes[index],
-                              id: widget.authService.id!,
-                              byRol: widget.authService.rol!,
-                              reloadSolicitud: () =>
-                                  PeticionesSolicitud.fetchSolicitudes(
-                                context: context,
-                                rol: widget.authService.rol!,
-                                id: widget.authService.id!,
-                                serviceSolicitud: serviceSolicitud,
-                                solicitudesState: solicitudesState,
-                              ),
-                            );
-                          },
-                        )
-                      : const Center(
-                          child: Text('No hay solicitudes'),
-                        ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              ListViewSolicitudes(
+                solicitudesState: solicitudesState,
+                imageState: imageState,
+                serviceUsuario: widget.serviceUsuario,
+                id: widget.authService.id!,
+                rol: widget.authService.rol!,
+                request: 'solicitudByRol',
+                serviceSolicitud: serviceSolicitud,
+              ),
+              ListViewSolicitudes(
+                solicitudesState: solicitudesState,
+                imageState: imageState,
+                serviceUsuario: widget.serviceUsuario,
+                id: widget.authService.id!,
+                rol: widget.authService.rol!,
+                request: 'solicitudes',
+                serviceSolicitud: serviceSolicitud,
+              ),
+            ],
+          ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
               Navigator.push(
@@ -236,21 +135,23 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
                           validatedToken: () =>
                               ProviderAuthService.checkTokenExpiration(
                                   context: context),
-                          reloadSolicitud: widget.authService.rol! ==
-                                      'residente' &&
-                                  _tabController.index == 1
-                              ? () => PeticionesSolicitud.fetchSolicitudesAll(
-                                    context: context,
-                                    serviceSolicitud: serviceSolicitud,
-                                    solicitudesState: solicitudesState,
-                                  )
-                              : () => PeticionesSolicitud.fetchSolicitudes(
-                                    context: context,
-                                    rol: widget.authService.rol!,
-                                    id: widget.authService.id!,
-                                    serviceSolicitud: serviceSolicitud,
-                                    solicitudesState: solicitudesState,
-                                  ),
+                          reloadSolicitud:
+                              widget.authService.rol! == 'residente' &&
+                                      _tabController.index == 1
+                                  ? () => PeticionesSolicitud.fetchSolicitudes(
+                                        request: 'solicitudes',
+                                        context: context,
+                                        serviceSolicitud: serviceSolicitud,
+                                        solicitudesState: solicitudesState,
+                                      )
+                                  : () => PeticionesSolicitud.fetchSolicitudes(
+                                        request: 'solicitudByRol',
+                                        context: context,
+                                        rol: widget.authService.rol!,
+                                        id: widget.authService.id!,
+                                        serviceSolicitud: serviceSolicitud,
+                                        solicitudesState: solicitudesState,
+                                      ),
                           id: widget.authService.id!,
                           byRol: widget.authService.rol!,
                         )),

@@ -19,8 +19,15 @@ class SolicitudesService {
         'Content-Type': 'application/json',
         'authorization': 'Bearer $token',
       });
-      return jsonDecode(response.body);
+      final decodedResponse = jsonDecode(response.body);
+      print(decodedResponse);
+      if (decodedResponse is List) {
+        return decodedResponse;
+      } else {
+        throw Exception('La respuesta no es una lista');
+      }
     } catch (error) {
+      print(error);
       throw Exception(error);
     }
   }
