@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:frontend/components/app_text_form_field.dart';
 import 'package:frontend/functions/solicitudes_state.dart';
 import 'package:frontend/functions/submit_handler.dart';
 import 'package:frontend/screens/register_screen.dart';
 import 'package:frontend/services/auth/auth_service.dart';
 import 'package:frontend/services/usuarios_service.dart';
+import 'package:frontend/values/app_constants.dart';
+import 'package:frontend/values/app_theme.dart';
+import '../values/app_string.dart';
+import 'package:frontend/utils/gradient_background.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,118 +21,185 @@ class LoginScreen extends StatefulWidget {
 class LoginScreenState extends State<LoginScreen> {
   final serviceUsuario = UsuariosService();
   final _formKey = GlobalKey<FormState>();
-  final _cedulaController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final ValueNotifier<bool> passwordNotifier = ValueNotifier(true);
+  final ValueNotifier<bool> fieldValidNotifier = ValueNotifier(false);
+  late final TextEditingController _cedulaController;
+  late final TextEditingController _passwordController;
+
+  void initializeControllers() {
+    _cedulaController = TextEditingController()
+      ..addListener(controllerListener);
+    _passwordController = TextEditingController()
+      ..addListener(controllerListener);
+  }
+
+  void disposeControllers() {
+    _cedulaController.dispose();
+    _passwordController.dispose();
+  }
+
+  void controllerListener() {
+    final email = _cedulaController.text;
+    final password = _passwordController.text;
+
+    if (email.isEmpty && password.isEmpty) return;
+
+    if (AppConstants.cedulaRegex.hasMatch(email) && password.isNotEmpty) {
+      fieldValidNotifier.value = true;
+    } else {
+      fieldValidNotifier.value = false;
+    }
+  }
+
+  @override
+  void initState() {
+    initializeControllers();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    disposeControllers();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
     final solicitudesState = Provider.of<SolicitudesState>(context);
+
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
+      body: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          const GradientBackground(
+            children: [
+              Text(
+                AppStrings.signInToYourNAccount,
+                style: AppTheme.titleLarge,
+              ),
+              SizedBox(
+                height: 6,
+              ),
+              Text(
+                AppStrings.signInToYourAccount,
+                style: AppTheme.bodySmall,
+              ),
+            ],
+          ),
+          Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const SizedBox(height: 40),
-                  Text(
-                    'Bienvenido',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blueAccent,
-                        ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
+                  AppTextFormField(
                     controller: _cedulaController,
-                    decoration: const InputDecoration(
-                      labelText: 'Cédula',
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Este campo es obligatorio';
-                      } else if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
-                        return 'Solo números y máximo 10 dígitos';
-                      }
-                      return null;
-                    },
+                    labelText: AppStrings.cedula,
                     keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(10)
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Contraseña',
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                    ),
+                    textInputAction: TextInputAction.next,
+                    onChanged: (_) => _formKey.currentState?.validate(),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
-                      return null;
+                      return value!.isEmpty
+                          ? AppStrings.pleaseEnterCedula
+                          : AppConstants.cedulaRegex.hasMatch(value)
+                              ? null
+                              : AppStrings.onlyNumbersAndMax10Digits;
                     },
                   ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        await FormSubmitHandler.loginSubmit(
-                            solicitudesState: solicitudesState,
-                            context: context,
-                            cedulaController: _cedulaController,
-                            passwordController: _passwordController,
-                            authService: authService,
-                            serviceUsuario: serviceUsuario);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text('Iniciar Sesión',
-                        style: TextStyle(fontSize: 16)),
-                  ),
-                  const SizedBox(height: 15),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                RegisterScreen(serviceUsuario: serviceUsuario)),
+                  ValueListenableBuilder(
+                    valueListenable: passwordNotifier,
+                    builder: (context, passwordObscure, _) {
+                      return AppTextFormField(
+                        obscureText: passwordObscure,
+                        controller: _passwordController,
+                        labelText: AppStrings.password,
+                        textInputAction: TextInputAction.done,
+                        keyboardType: TextInputType.visiblePassword,
+                        onChanged: (_) => _formKey.currentState?.validate(),
+                        validator: (value) {
+                          return value!.isEmpty
+                              ? AppStrings.pleaseEnterPassword
+                              : null;
+                        },
+                        suffixIcon: IconButton(
+                          onPressed: () =>
+                              passwordNotifier.value = !passwordObscure,
+                          style: IconButton.styleFrom(
+                            minimumSize: const Size.square(48),
+                          ),
+                          icon: Icon(
+                            passwordObscure
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            size: 20,
+                            color: Colors.black,
+                          ),
+                        ),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  ),
+                  const SizedBox(height: 20),
+                  ValueListenableBuilder(
+                    valueListenable: fieldValidNotifier,
+                    builder: (context, isValid, _) {
+                      return ElevatedButton(
+                        onPressed: isValid
+                            ? () async {
+                                await FormSubmitHandler.loginSubmit(
+                                  solicitudesState: solicitudesState,
+                                  context: context,
+                                  cedulaController: _cedulaController,
+                                  passwordController: _passwordController,
+                                  authService: authService,
+                                  serviceUsuario: serviceUsuario,
+                                );
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          backgroundColor: Colors.lightGreen.shade300,
+                          foregroundColor: Colors.black,
+                        ),
+                        child: const Text(AppStrings.login),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        AppStrings.doNotHaveAnAccount,
+                        style: AppTheme.bodySmall.copyWith(color: Colors.black),
                       ),
-                    ),
-                    child: const Text('Registrarse',
-                        style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 4),
+                      TextButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RegisterScreen(
+                              serviceUsuario: serviceUsuario,
+                            ),
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.lightGreen.shade900,
+                        ),
+                        child: const Text(AppStrings.register),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
