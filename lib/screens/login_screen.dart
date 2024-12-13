@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:frontend/components/app_text_form_field.dart';
 import 'package:frontend/functions/solicitudes_state.dart';
 import 'package:frontend/functions/submit_handler.dart';
@@ -23,14 +24,12 @@ class LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final ValueNotifier<bool> passwordNotifier = ValueNotifier(true);
   final ValueNotifier<bool> fieldValidNotifier = ValueNotifier(false);
-  late final TextEditingController _cedulaController;
-  late final TextEditingController _passwordController;
+  final _cedulaController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   void initializeControllers() {
-    _cedulaController = TextEditingController()
-      ..addListener(controllerListener);
-    _passwordController = TextEditingController()
-      ..addListener(controllerListener);
+    _cedulaController.addListener(controllerListener);
+    _passwordController.addListener(controllerListener);
   }
 
   void disposeControllers() {
@@ -39,12 +38,12 @@ class LoginScreenState extends State<LoginScreen> {
   }
 
   void controllerListener() {
-    final email = _cedulaController.text;
+    final cedula = _cedulaController.text;
     final password = _passwordController.text;
 
-    if (email.isEmpty && password.isEmpty) return;
+    if (password.isEmpty || cedula.isEmpty ) return;
 
-    if (AppConstants.cedulaRegex.hasMatch(email) && password.isNotEmpty) {
+    if (AppConstants.cedulaRegex.hasMatch(cedula) && password.isNotEmpty) {
       fieldValidNotifier.value = true;
     } else {
       fieldValidNotifier.value = false;
@@ -108,6 +107,10 @@ class LoginScreenState extends State<LoginScreen> {
                               ? null
                               : AppStrings.onlyNumbersAndMax10Digits;
                     },
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(10),
+                    ],
                   ),
                   ValueListenableBuilder(
                     valueListenable: passwordNotifier,

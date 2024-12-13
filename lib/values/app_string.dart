@@ -5,20 +5,27 @@ class AppStrings {
   static const String uhOhPageNotFound = 'Oh no! Página no encontrada';
   static const String register = 'Registrarse';
   static const String login = 'Iniciar Sesión';
-  static const String createYourAccount = 'Create your account';
+  static const String createYourAccount = 'Crea tu cuenta';
   static const String doNotHaveAnAccount = "No tienes una cuenta?";
   static const String signInToYourNAccount = 'Bienvenido a la \nUrbanización';
   static const String signInToYourAccount = 'Iniciar sesión para poder continuar';
-  static const String iHaveAnAccount = 'I have an account?';
+  static const String iHaveAnAccount = 'Tiene una cuenta?';
   static const String forgotPassword = 'Forgot Password?';
   static const String orLoginWith = 'or Login with';
 
   static const String loggedIn = 'Logged In!';
   static const String registrationComplete = 'Registration Complete!';
 
-  static const String name = 'Name';
-  static const String pleaseEnterName = 'Please, Enter Name';
-  static const String invalidName = 'Invalid Name';
+  static const String invalidRol = 'Rol inválido';
+  static const String pleaseSelectRol = 'Por favor, seleccione un rol';
+
+  static const String name = 'Nombres';
+  static const String pleaseEnterName = 'Por favor, ingrese su nombre';
+  static const String invalidName = 'Nombre inválido';
+
+  static const String lastName = 'Apellidos';
+  static const String pleaseEnterLastName = 'Por favor, ingrese su apellido';
+  static const String invalidLastName = 'Apellido inválido';
 
   static const String email = 'Email';
   static const String pleaseEnterEmailAddress = 'Please, Enter Email Address';
@@ -34,6 +41,6 @@ class AppStrings {
 
   static const String cedula = 'Cédula';
   static const String pleaseEnterCedula = 'Por favor, ingrese su cédula';
-  static const String onlyNumbersAndMax10Digits = 'Solo números y máximo 10 dígitos';
+  static const String onlyNumbersAndMax10Digits = 'Máximo 10 dígitos';
 
 }

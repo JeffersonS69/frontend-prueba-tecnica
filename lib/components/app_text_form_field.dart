@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AppTextFormField extends StatelessWidget {
   const AppTextFormField({
@@ -14,6 +15,7 @@ class AppTextFormField extends StatelessWidget {
     this.onEditingComplete,
     this.autofocus,
     this.focusNode,
+    this.inputFormatters,
   });
 
   final void Function(String)? onChanged;
@@ -26,6 +28,7 @@ class AppTextFormField extends StatelessWidget {
   final String labelText;
   final bool? autofocus;
   final FocusNode? focusNode;
+  final List<TextInputFormatter>? inputFormatters;
   final void Function()? onEditingComplete;
 
   @override
@@ -36,6 +39,7 @@ class AppTextFormField extends StatelessWidget {
         controller: controller,
         keyboardType: keyboardType,
         textInputAction: textInputAction,
+        inputFormatters: inputFormatters,
         focusNode: focusNode,
         onChanged: onChanged,
         autofocus: autofocus ?? false,
